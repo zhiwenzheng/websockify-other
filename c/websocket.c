@@ -563,11 +563,12 @@ int parse_handshake(ws_ctx_t *ws_ctx, char *handshake) {
         headers->connection[end-start] = '\0';
    
         start = strstr(handshake, "\r\nSec-WebSocket-Protocol: ");
-        if (!start) { return 0; }
-        start += 26;
-        end = strstr(start, "\r\n");
-        strncpy(headers->protocols, start, end-start);
-        headers->protocols[end-start] = '\0';
+        if (start) {
+            start += 26;
+            end = strstr(start, "\r\n");
+            strncpy(headers->protocols, start, end-start);
+            headers->protocols[end-start] = '\0';
+        }
     } else {
         // Hixie 75 or 76
         ws_ctx->hybi = 0;
@@ -742,7 +743,7 @@ ws_ctx_t *do_handshake(int sock) {
     if (ws_ctx->hybi > 0) {
         handler_msg("using protocol HyBi/IETF 6455 %d\n", ws_ctx->hybi);
         gen_sha1(headers, sha1);
-        snprintf(response, sizeof(response), SERVER_HANDSHAKE_HYBI, sha1, response_protocol);
+        snprintf(response, sizeof(response), SERVER_HANDSHAKE_HYBI, sha1);
     } else {
         if (ws_ctx->hixie == 76) {
             handler_msg("using protocol Hixie 76\n");
